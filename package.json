@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "ava": "^0.25.0",
+    "bee-queue": "^1.2.2"
+  },
+  "name": "bee-queue-sandbox",
+  "version": "0.0.1",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "test": "ava"
+  }
+}
