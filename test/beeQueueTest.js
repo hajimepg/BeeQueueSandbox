@@ -35,6 +35,7 @@ test("Receive Job succeeded Event", (t) => {
         const job = queue.createJob({ lhs: 1, rhs: 2 });
         await job.save();
 
+        // noinspection JSUnresolvedFunction
         job.on("succeeded", (result) => {
             t.is(3, result);
             resolve();
@@ -42,6 +43,37 @@ test("Receive Job succeeded Event", (t) => {
 
         queue.process(async (job) => {
             return job.data.lhs + job.data.rhs;
+        });
+    });
+});
+
+test("Receive Job succeeded Event on Other Instance", (t) => {
+    return new Promise(async (resolve, reject) => {
+        const queue = new Queue("test");
+        const job = queue.createJob({ lhs: 1, rhs: 2 });
+        await job.save();
+
+        queue.getJob(job.id, (error, otherJobInstance) => {
+            if (error !== null) {
+                reject(error);
+                return;
+            }
+
+            const callbackHistory = [];
+            // noinspection JSUnresolvedFunction
+            job.on("succeeded", () => { callbackHistory.push("job"); });
+            // noinspection JSUnresolvedFunction
+            otherJobInstance.on("succeeded", () => { callbackHistory.push("otherJobInstance"); });
+
+            setTimeout(() => {
+                t.true(callbackHistory.includes("job"));
+                t.true(callbackHistory.includes("otherJobInstance"));
+                resolve();
+            }, 100);
+
+            queue.process(async (job) => {
+                return job.data.lhs + job.data.rhs;
+            });
         });
     });
 });
